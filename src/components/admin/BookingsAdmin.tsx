@@ -155,11 +155,24 @@ export function BookingsAdmin() {
   }
 
   async function testTelegram() {
+    if (!content) return;
+
+    const chatId = content.telegram?.chatId?.trim();
+    if (!chatId) {
+      showMessage("Введите Chat ID в поле выше");
+      return;
+    }
+
     setTestingTelegram(true);
-    const res = await fetch("/api/telegram/test", { method: "POST" });
+    const res = await fetch("/api/telegram/test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chatId, saveChatId: true }),
+    });
     setTestingTelegram(false);
+
     if (res.ok) {
-      showMessage("Тестовое сообщение отправлено");
+      showMessage("Тестовое сообщение отправлено и Chat ID сохранён");
     } else {
       const data = (await res.json()) as { error?: string };
       showMessage(data.error ?? "Ошибка отправки");
@@ -557,7 +570,8 @@ export function BookingsAdmin() {
                   @BotFather
                 </a>
                 , добавьте токен в <code className="text-foreground">TELEGRAM_BOT_TOKEN</code> в
-                .env, укажите Chat ID и нажмите «Тест».
+                .env.local на сервере. Chat ID — в поле ниже. Перед тестом напишите боту{" "}
+                <code className="text-foreground">/start</code> в Telegram.
               </p>
 
               <label className="flex items-center gap-3 cursor-pointer">
@@ -586,8 +600,12 @@ export function BookingsAdmin() {
                       telegram: { ...telegram, chatId: e.target.value },
                     })
                   }
-                  placeholder="-1001234567890"
+                  placeholder="394096479"
                 />
+                <p className="text-muted text-xs">
+                  Личный ID (как у вас) или ID группы (отрицательное число). Тест
+                  использует значение из поля — «Сохранить» нажимать не обязательно.
+                </p>
               </label>
 
               <div className="space-y-3 text-sm">

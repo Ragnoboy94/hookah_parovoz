@@ -20,22 +20,11 @@ function getChatId(content: SiteContent): string | undefined {
   return undefined;
 }
 
-export async function sendTelegramMessage(
+async function callTelegramApi(
+  token: string,
+  chatId: string,
   text: string,
-  options?: { force?: boolean },
-): Promise<boolean> {
-  const token = getBotToken();
-  const content = await getContent();
-  const chatId = getChatId(content);
-
-  if (!token || !chatId) {
-    return false;
-  }
-
-  if (!options?.force && !content.telegram?.enabled) {
-    return false;
-  }
-
+): Promise<{ ok: boolean; error?: string }> {
   try {
     const res = await fetch(
       `https://api.telegram.org/bot${token}/sendMessage`,
@@ -49,10 +38,36 @@ export async function sendTelegramMessage(
         }),
       },
     );
-    return res.ok;
+
+    if (res.ok) {
+      return { ok: true };
+    }
+
+    const data = (await res.json()) as { description?: string };
+    return { ok: false, error: data.description ?? `HTTP ${res.status}` };
   } catch {
+    return { ok: false, error: "Не удалось связаться с Telegram API" };
+  }
+}
+
+export async function sendTelegramMessage(
+  text: string,
+  options?: { force?: boolean; chatId?: string },
+): Promise<boolean> {
+  const token = getBotToken();
+  const content = await getContent();
+  const chatId = options?.chatId?.trim() || getChatId(content);
+
+  if (!token || !chatId) {
     return false;
   }
+
+  if (!options?.force && !content.telegram?.enabled) {
+    return false;
+  }
+
+  const result = await callTelegramApi(token, chatId, text);
+  return result.ok;
 }
 
 function formatBookingDate(date: string): string {
@@ -110,22 +125,42 @@ export async function notifyBookingCreated(
   );
 }
 
-export async function sendTelegramTest(): Promise<{ ok: boolean; error?: string }> {
+export async function sendTelegramTest(
+  chatIdOverride?: string,
+): Promise<{ ok: boolean; error?: string }> {
   const token = getBotToken();
   const content = await getContent();
-  const chatId = getChatId(content);
+  const chatId = chatIdOverride?.trim() || getChatId(content);
 
   if (!token) {
-    return { ok: false, error: "Не задан TELEGRAM_BOT_TOKEN в .env" };
+    return {
+      ok: false,
+      error:
+        "Не задан TELEGRAM_BOT_TOKEN в .env.local на сервере. После добавления: pm2 restart parovoz --update-env",
+    };
   }
   if (!chatId) {
-    return { ok: false, error: "Не задан Chat ID" };
+    return {
+      ok: false,
+      error:
+        "Не задан Chat ID. Укажите в поле выше и нажмите «Тест» (сохранять не обязательно) или добавьте TELEGRAM_CHAT_ID в .env.local",
+    };
   }
 
-  const ok = await sendTelegramMessage(
+  const result = await callTelegramApi(
+    token,
+    chatId,
     `✅ <b>Тест</b> · ${escapeHtml(content.title)}\nБот подключён, уведомления работают.`,
-    { force: true },
   );
 
-  return ok ? { ok: true } : { ok: false, error: "Telegram API вернул ошибку" };
+  if (result.ok) {
+    return { ok: true };
+  }
+
+  return {
+    ok: false,
+    error:
+      result.error ??
+      "Telegram API вернул ошибку. Напишите боту /start в личке, если Chat ID ваш личный.",
+  };
 }
