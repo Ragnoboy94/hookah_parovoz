@@ -1,0 +1,99 @@
+{
+  "title": "Паровоз",
+  "subtitle": "Ваше место отдыха",
+  "address": "Улица Артиллерийская, д. 63",
+  "phone": "+7 (911) 464-58-12",
+  "timezone": "Europe/Kaliningrad",
+  "theme": {
+    "primaryColor": "#0b5e02",
+    "mode": "dark"
+  },
+  "schedule": {
+    "midnightHour": 3,
+    "days": [
+      { "open": 17, "close": 25 },
+      { "open": 17, "close": 25 },
+      { "open": 17, "close": 25 },
+      { "open": 17, "close": 25 },
+      { "open": 17, "close": 27 },
+      { "open": 17, "close": 27 },
+      { "open": 17, "close": 25 }
+    ]
+  },
+  "social": {
+    "vk": "",
+    "telegram": "",
+    "instagram": "",
+    "facebook": ""
+  },
+  "reviews": {
+    "enabled": true,
+    "google": "",
+    "yandex": "",
+    "gis2": ""
+  },
+  "menu": {
+    "enabled": true,
+    "categories": [
+      {
+        "id": "hookah",
+        "name": "Кальяны",
+        "items": [
+          {
+            "id": "classic",
+            "name": "Классический кальян",
+            "description": "Табак на выбор, уголь, чаша",
+            "price": 1200
+          },
+          {
+            "id": "premium",
+            "name": "Премиум кальян",
+            "description": "Премиальные табаки, фруктовая чаша",
+            "price": 1800
+          }
+        ]
+      },
+      {
+        "id": "drinks",
+        "name": "Напитки",
+        "items": [
+          {
+            "id": "tea",
+            "name": "Чай",
+            "description": "Ассортимент на выбор",
+            "price": 250
+          },
+          {
+            "id": "coffee",
+            "name": "Кофе",
+            "price": 300
+          },
+          {
+            "id": "lemonade",
+            "name": "Лимонад",
+            "price": 350
+          }
+        ]
+      }
+    ]
+  },
+  "booking": {
+    "enabled": true,
+    "intervalMinutes": 30,
+    "durationMinutes": 120,
+    "maxAdvanceDays": 14,
+    "hookahHourPrice": 60,
+    "maxHookahHours": 3
+  },
+  "legal": {
+    "ageRestriction": "Данное заведение запрещено для посещения детям (18+). При входе вас могут попросить предъявить оригинал удостоверения личности."
+  },
+  "yandexMetrikaId": "50782111",
+  "telegram": {
+    "enabled": false,
+    "chatId": "",
+    "notifyOnOnlineBooking": true,
+    "notifyOnAdminBooking": true,
+    "notifyOnBlock": false
+  }
+}

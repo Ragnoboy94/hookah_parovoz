@@ -1,0 +1,31 @@
+[
+  {
+    "id": "mq0od0hn0rgr53",
+    "tableId": "t1",
+    "date": "2026-06-05",
+    "time": "17:30",
+    "durationMinutes": 120,
+    "guestName": "Сергей",
+    "guestPhone": "+79086444821",
+    "guests": 2,
+    "status": "cancelled",
+    "createdAt": "2026-06-05T08:41:08.795Z",
+    "kind": "guest",
+    "source": "online"
+  },
+  {
+    "id": "mq0p5206vs6hr8",
+    "tableId": "t1",
+    "date": "2026-06-05",
+    "time": "11:00",
+    "durationMinutes": 120,
+    "guestName": "Занято",
+    "guestPhone": "—",
+    "guests": 1,
+    "status": "cancelled",
+    "kind": "block",
+    "source": "admin",
+    "note": "Гости за столом",
+    "createdAt": "2026-06-05T09:02:57.126Z"
+  }
+]

@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Паровоз — сайт кальянной
 
-## Getting Started
+Автономный лендинг с админ-панелью. Не зависит от Hookah.Work — весь контент хранится локально в `data/content.json`.
 
-First, run the development server:
+## Возможности
+
+- Красивый тёмный лендинг с акцентным цветом бренда
+- Статус «открыто / закрыто» по расписанию (часовой пояс Калининград)
+- Меню с категориями и ценами
+- Контакты, адрес, часы работы
+- Соцсети и ссылки на отзывы
+- Яндекс.Метрика
+- Админ-панель `/admin` для редактирования всего контента
+- Онлайн-бронирование столиков `/booking`
+- Управление бронями `/admin/bookings` (зал сегодня, блокировка столов, заявки)
+- Telegram-уведомления о новых бронях
+
+## Запуск
 
 ```bash
+npm install
+cp .env.example .env.local
+# Задайте ADMIN_PASSWORD в .env.local
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Сайт: http://localhost:3000  
+Админка: http://localhost:3000/admin  
+Бронирования: http://localhost:3000/admin/bookings  
+Бронь для гостей: http://localhost:3000/booking
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Деплой
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Подойдёт любой VPS или хостинг с Node.js:
 
-## Learn More
+```bash
+npm run build
+npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+На сервере задайте переменную `ADMIN_PASSWORD` и убедитесь, что папка `data/` доступна для записи (админка сохраняет изменения в `data/content.json`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Telegram-уведомления
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Создайте бота через [@BotFather](https://t.me/BotFather)
+2. Добавьте бота в чат админов (или напишите ему лично)
+3. Узнайте Chat ID (например через [@userinfobot](https://t.me/userinfobot) или `@getidsbot`)
+4. В `.env.local` задайте `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID`
+5. В `/admin/bookings` → Настройки → включите уведомления и нажмите «Тест»
 
-## Deploy on Vercel
+### Nginx (пример)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Проксируйте домен `parovoz1507.hookah.name` на порт 3000:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+```
+
+## Структура
+
+- `data/content.json` — весь контент сайта
+- `src/app/page.tsx` — лендинг
+- `src/app/admin/` — админ-панель
+- `src/app/api/` — API для контента и авторизации
