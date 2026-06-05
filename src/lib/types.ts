@@ -58,6 +58,13 @@ export interface SiteContent {
     ageRestriction: string;
   };
   yandexMetrikaId?: string;
+  seo?: {
+    siteUrl: string;
+    metaTitle: string;
+    metaDescription: string;
+    keywords: string;
+    ogImage: string;
+  };
   telegram?: {
     enabled: boolean;
     chatId: string;

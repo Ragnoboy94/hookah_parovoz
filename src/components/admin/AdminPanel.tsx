@@ -15,7 +15,7 @@ export function AdminPanel() {
   const [content, setContent] = useState<SiteContent | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [tab, setTab] = useState<"main" | "schedule" | "menu" | "social">("main");
+  const [tab, setTab] = useState<"main" | "schedule" | "menu" | "social" | "seo">("main");
 
   const loadAuth = useCallback(async () => {
     const res = await fetch("/api/auth/me");
@@ -164,10 +164,20 @@ export function AdminPanel() {
 
   const tabs = [
     { id: "main" as const, label: "Основное" },
+    { id: "seo" as const, label: "SEO" },
     { id: "schedule" as const, label: "Расписание" },
     { id: "menu" as const, label: "Меню" },
     { id: "social" as const, label: "Ссылки" },
   ];
+
+  const defaultSeo = {
+    siteUrl: "https://parovoz39.ru",
+    metaTitle: `${content?.title ?? ""} — кальянная`,
+    metaDescription: content?.subtitle ?? "",
+    keywords: "",
+    ogImage: "",
+  };
+  const seo = { ...defaultSeo, ...content?.seo };
 
   return (
     <div className="min-h-screen smoke-bg">
@@ -289,6 +299,74 @@ export function AdminPanel() {
                 onChange={(e) => update("yandexMetrikaId", e.target.value)}
               />
             </Field>
+          </div>
+        )}
+
+        {tab === "seo" && (
+          <div className="space-y-6">
+            <p className="text-muted text-sm">
+              Настройки для поисковиков и превью в соцсетях. После HTTPS укажите
+              полный URL с https://
+            </p>
+            <Field label="URL сайта (canonical)">
+              <input
+                className="input-field"
+                value={seo.siteUrl}
+                onChange={(e) =>
+                  update("seo", { ...seo, siteUrl: e.target.value })
+                }
+                placeholder="https://parovoz39.ru"
+              />
+            </Field>
+            <Field label="Заголовок (title)">
+              <input
+                className="input-field"
+                value={seo.metaTitle}
+                onChange={(e) =>
+                  update("seo", { ...seo, metaTitle: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Описание (description)">
+              <textarea
+                className="input-field min-h-24 resize-y"
+                value={seo.metaDescription}
+                onChange={(e) =>
+                  update("seo", { ...seo, metaDescription: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Ключевые слова (через запятую)">
+              <input
+                className="input-field"
+                value={seo.keywords}
+                onChange={(e) =>
+                  update("seo", { ...seo, keywords: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Картинка для соцсетей (необязательно)">
+              <input
+                className="input-field"
+                value={seo.ogImage}
+                onChange={(e) =>
+                  update("seo", { ...seo, ogImage: e.target.value })
+                }
+                placeholder="/og.jpg или https://..."
+              />
+              <p className="text-muted text-xs mt-1">
+                Пусто — автокартинка /opengraph-image
+              </p>
+            </Field>
+            <div className="glass-card rounded-xl p-4 text-sm text-muted space-y-1">
+              <p>
+                <strong className="text-foreground">robots.txt:</strong> /robots.txt
+              </p>
+              <p>
+                <strong className="text-foreground">sitemap:</strong>{" "}
+                {seo.siteUrl.replace(/\/$/, "")}/sitemap.xml
+              </p>
+            </div>
           </div>
         )}
 

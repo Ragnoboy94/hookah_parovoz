@@ -1,6 +1,7 @@
 import { BookingForm } from "@/components/booking/BookingForm";
 import { ThemeProvider } from "@/components/landing/ThemeProvider";
 import { getContent } from "@/lib/content";
+import { buildPageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -8,10 +9,11 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const content = await getContent();
-  return {
-    title: `Бронирование — ${content.title}`,
-    description: "Забронируйте столик онлайн",
-  };
+  return buildPageMetadata(content, {
+    title: `Бронирование столика — ${content.title}`,
+    description: `Забронируйте столик в кальянной ${content.title}. ${content.address}. Онлайн-бронирование на удобное время.`,
+    path: "/booking",
+  });
 }
 
 export default async function BookingPage() {
