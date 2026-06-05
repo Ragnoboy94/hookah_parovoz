@@ -54,13 +54,17 @@ export async function isAuthenticated(): Promise<boolean> {
   return validateSessionToken(token);
 }
 
+function useSecureCookie(): boolean {
+  return process.env.COOKIE_SECURE === "true";
+}
+
 export function sessionCookieOptions(token: string) {
   return {
     name: COOKIE_NAME,
     value: token,
     httpOnly: true,
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure: useSecureCookie(),
     path: "/",
     maxAge: SESSION_TTL_MS / 1000,
   };
@@ -72,7 +76,7 @@ export function clearSessionCookieOptions() {
     value: "",
     httpOnly: true,
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure: useSecureCookie(),
     path: "/",
     maxAge: 0,
   };

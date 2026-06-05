@@ -57,7 +57,12 @@ export function BookingsAdmin() {
       ? `/api/bookings?date=${filterDate}`
       : "/api/bookings";
     const res = await fetch(url);
-    setBookings((await res.json()) as Booking[]);
+    if (!res.ok) {
+      setBookings([]);
+      return;
+    }
+    const data = (await res.json()) as Booking[];
+    setBookings(Array.isArray(data) ? data : []);
   }, [filterDate]);
 
   const loadTables = useCallback(async () => {
