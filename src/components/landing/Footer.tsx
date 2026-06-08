@@ -29,12 +29,6 @@ export function Footer({ content }: FooterProps) {
   return (
     <footer className="px-6 py-12 border-t border-white/5">
       <div className="max-w-5xl mx-auto space-y-8">
-        {content.legal.ageRestriction && (
-          <p className="text-muted text-sm text-center max-w-2xl mx-auto leading-relaxed">
-            {content.legal.ageRestriction}
-          </p>
-        )}
-
         {(socialLinks.length > 0 || reviewLinks.length > 0) && (
           <div className="flex flex-wrap justify-center gap-4">
             {socialLinks.map(([key, url]) => (

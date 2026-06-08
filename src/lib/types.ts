@@ -51,6 +51,7 @@ export interface SiteContent {
     intervalMinutes: number;
     durationMinutes: number;
     maxAdvanceDays: number;
+    onlyTodayOnline: boolean;
     hookahHourPrice: number;
     maxHookahHours: number;
   };
@@ -85,6 +86,7 @@ export interface Table {
   name: string;
   seats: number;
   enabled: boolean;
+  image?: string;
 }
 
 export type BookingStatus = "pending" | "confirmed" | "cancelled";

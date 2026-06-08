@@ -9,7 +9,7 @@ export function Hero({ content, status }: HeroProps) {
   const phoneHref = `tel:${content.phone.replace(/[^\d+]/g, "")}`;
 
   return (
-    <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 py-24 text-center smoke-bg">
+    <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 py-24 text-center">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-20 blur-3xl"

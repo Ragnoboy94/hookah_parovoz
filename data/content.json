@@ -103,6 +103,7 @@
     "intervalMinutes": 30,
     "durationMinutes": 120,
     "maxAdvanceDays": 14,
+    "onlyTodayOnline": true,
     "hookahHourPrice": 60,
     "maxHookahHours": 3
   },

@@ -3,6 +3,7 @@ import { isAuthenticated } from "@/lib/auth";
 import {
   createBookingRecord,
   getAvailability,
+  getBookingBusinessDate,
   isTableAvailable,
 } from "@/lib/booking";
 import {
@@ -76,6 +77,16 @@ export async function POST(request: Request) {
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
       return NextResponse.json({ error: "Некорректная дата или время" }, { status: 400 });
+    }
+
+    if (content.booking.onlyTodayOnline !== false) {
+      const businessDate = getBookingBusinessDate(content);
+      if (date !== businessDate) {
+        return NextResponse.json(
+          { error: "Онлайн-бронь доступна только на текущую смену" },
+          { status: 400 },
+        );
+      }
     }
 
     const [tables, bookings] = await Promise.all([

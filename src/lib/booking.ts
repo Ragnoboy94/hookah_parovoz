@@ -59,6 +59,56 @@ export function addDays(dateStr: string, days: number, timezone: string): string
   return formatDateInput(base, timezone);
 }
 
+/** Calendar date for the current business shift (before midnightHour counts as previous day). */
+export function getBookingBusinessDate(
+  content: SiteContent,
+  now = new Date(),
+): string {
+  const local = getLocalNow(content.timezone);
+  const calendarToday = formatDateInput(now, content.timezone);
+
+  if (local.getHours() < content.schedule.midnightHour) {
+    return addDays(calendarToday, -1, content.timezone);
+  }
+
+  return calendarToday;
+}
+
+/**
+ * Continuous minutes on the overnight shift (open → close past midnight).
+ * Slot times like 01:00 are after midnight and sit after 23:00 on the timeline.
+ */
+function slotOnShiftTimeline(time: string, openHour: number): number {
+  const minutes = timeToMinutes(time);
+  const openMin = hourToMinutes(openHour);
+
+  if (minutes < openMin) {
+    return minutes + 24 * 60;
+  }
+
+  return minutes;
+}
+
+/** Current moment on the same shift timeline. */
+function nowOnShiftTimeline(
+  local: Date,
+  openHour: number,
+  midnightHour: number,
+): number {
+  const minutes = local.getHours() * 60 + local.getMinutes();
+  const openMin = hourToMinutes(openHour);
+
+  if (local.getHours() < midnightHour) {
+    return minutes + 24 * 60;
+  }
+
+  if (minutes < openMin) {
+    return openMin - 1;
+  }
+
+  return minutes;
+}
+
 function bookingRangeMinutes(
   time: string,
   durationMinutes: number,
@@ -135,15 +185,21 @@ export function getAvailability(
     };
   }
 
-  const today = formatDateInput(now, content.timezone);
-  const maxDate = addDays(today, content.booking.maxAdvanceDays, content.timezone);
+  const businessToday = getBookingBusinessDate(content, now);
+  const calendarToday = formatDateInput(now, content.timezone);
+  const maxDate = content.booking.onlyTodayOnline
+    ? businessToday
+    : addDays(calendarToday, content.booking.maxAdvanceDays, content.timezone);
+  const minDate = content.booking.onlyTodayOnline ? businessToday : calendarToday;
 
-  if (date < today || date > maxDate) {
+  if (date < minDate || date > maxDate) {
     return {
       date,
       slots: [],
       closed: true,
-      closedReason: "Дата недоступна для бронирования",
+      closedReason: content.booking.onlyTodayOnline
+        ? "Онлайн-бронь только на текущую смену"
+        : "Дата недоступна для бронирования",
     };
   }
 
@@ -154,19 +210,23 @@ export function getAvailability(
     content.booking.durationMinutes,
   );
 
-  const localNow = new Date(
-    now.toLocaleString("en-US", { timeZone: content.timezone }),
-  );
-  const nowMinutes =
-    date === today
-      ? localNow.getHours() * 60 + localNow.getMinutes()
-      : -1;
+  const localNow = getLocalNow(content.timezone);
+  const onCurrentShift = date === businessToday;
+  const nowOnShift = onCurrentShift
+    ? nowOnShiftTimeline(
+        localNow,
+        daySchedule.open,
+        content.schedule.midnightHour,
+      )
+    : -1;
 
   const activeBookings = bookings.filter((b) => b.status !== "cancelled");
   const slots: SlotAvailability[] = [];
 
   for (const time of slotTimes) {
-    if (date === today && timeToMinutes(time) <= nowMinutes) {
+    const slotOnShift = slotOnShiftTimeline(time, daySchedule.open);
+
+    if (onCurrentShift && slotOnShift <= nowOnShift) {
       continue;
     }
 

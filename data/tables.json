@@ -1,6 +1,29 @@
 [
-  { "id": "t1", "name": "Стол 1", "seats": 4, "enabled": true },
-  { "id": "t2", "name": "Стол 2", "seats": 4, "enabled": true },
-  { "id": "t3", "name": "Стол 3", "seats": 6, "enabled": true },
-  { "id": "t4", "name": "VIP-зона", "seats": 8, "enabled": true }
+  {
+    "id": "t1",
+    "name": "Стол 1",
+    "seats": 4,
+    "enabled": true,
+    "image": "/uploads/tables/t1.png"
+  },
+  {
+    "id": "t2",
+    "name": "Стол 2",
+    "seats": 4,
+    "enabled": true,
+    "image": "/uploads/tables/t2.jpg"
+  },
+  {
+    "id": "t3",
+    "name": "Стол 3",
+    "seats": 6,
+    "enabled": true,
+    "image": "/uploads/tables/t3.jpg"
+  },
+  {
+    "id": "t4",
+    "name": "VIP-зона",
+    "seats": 8,
+    "enabled": true
+  }
 ]

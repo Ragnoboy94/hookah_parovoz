@@ -127,7 +127,7 @@ export function AdminPanel() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 smoke-bg">
+      <div className="min-h-screen flex items-center justify-center px-6 admin-bg">
         <form
           onSubmit={handleLogin}
           className="glass-card rounded-2xl p-8 w-full max-w-sm space-y-4"
@@ -180,7 +180,7 @@ export function AdminPanel() {
   const seo = { ...defaultSeo, ...content?.seo };
 
   return (
-    <div className="min-h-screen smoke-bg">
+    <div className="min-h-screen admin-bg">
       <header className="sticky top-0 z-20 border-b border-white/5 bg-background/80 backdrop-blur-md">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <h1 className="font-display text-xl font-bold">Админ-панель</h1>

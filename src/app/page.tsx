@@ -1,3 +1,4 @@
+import { AgeNotice } from "@/components/landing/AgeNotice";
 import { JsonLd } from "@/components/landing/JsonLd";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/landing/Footer";
@@ -24,8 +25,9 @@ export default async function HomePage() {
   return (
     <ThemeProvider content={content}>
       <JsonLd data={jsonLd} />
-      <main>
+      <main className="site-bg min-h-screen">
         <Hero content={content} status={status} />
+        <AgeNotice text={content.legal.ageRestriction} />
         <Menu content={content} />
         <Contact content={content} />
         <Footer content={content} />

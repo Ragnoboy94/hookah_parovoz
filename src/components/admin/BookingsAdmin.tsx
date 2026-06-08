@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { TableAdminRow } from "@/components/admin/TableAdminRow";
 import { TodayPanel } from "@/components/admin/TodayPanel";
 import type { Booking, BookingStatus, SiteContent, Table } from "@/lib/types";
 
@@ -220,7 +221,7 @@ export function BookingsAdmin() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 smoke-bg">
+      <div className="min-h-screen flex items-center justify-center px-6 admin-bg">
         <form
           onSubmit={handleLogin}
           className="glass-card rounded-2xl p-8 w-full max-w-sm space-y-4"
@@ -250,7 +251,7 @@ export function BookingsAdmin() {
   const telegram = content?.telegram ?? defaultTelegram;
 
   return (
-    <div className="min-h-screen smoke-bg">
+    <div className="min-h-screen admin-bg">
       <header className="sticky top-0 z-20 border-b border-white/5 bg-background/80 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
           <h1 className="font-display text-xl font-bold">Бронирования</h1>
@@ -407,54 +408,26 @@ export function BookingsAdmin() {
 
         {tab === "tables" && (
           <div className="space-y-4">
+            <p className="text-muted text-sm">
+              Фото столиков отображаются при онлайн-бронировании. Форматы: JPG, PNG,
+              WebP. Для нового столика сначала нажмите «Сохранить столики».
+            </p>
             {tables.map((table, index) => (
-              <div
+              <TableAdminRow
                 key={table.id}
-                className="glass-card rounded-xl p-4 grid sm:grid-cols-[1fr_80px_80px_auto] gap-3 items-center"
-              >
-                <input
-                  className="input-field"
-                  value={table.name}
-                  onChange={(e) => {
-                    const next = [...tables];
-                    next[index] = { ...table, name: e.target.value };
-                    setTables(next);
-                  }}
-                />
-                <input
-                  type="number"
-                  className="input-field"
-                  min={1}
-                  value={table.seats}
-                  onChange={(e) => {
-                    const next = [...tables];
-                    next[index] = { ...table, seats: Number(e.target.value) };
-                    setTables(next);
-                  }}
-                  title="Мест"
-                />
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={table.enabled}
-                    onChange={(e) => {
-                      const next = [...tables];
-                      next[index] = { ...table, enabled: e.target.checked };
-                      setTables(next);
-                    }}
-                    className="accent-primary"
-                  />
-                  Вкл
-                </label>
-                <button
-                  onClick={() =>
-                    setTables(tables.filter((_, i) => i !== index))
-                  }
-                  className="text-red-400 text-sm hover:underline"
-                >
-                  Удалить
-                </button>
-              </div>
+                table={table}
+                onChange={(updated) => {
+                  const next = [...tables];
+                  next[index] = updated;
+                  setTables(next);
+                }}
+                onImageUploaded={(image) => {
+                  const next = [...tables];
+                  next[index] = { ...table, image };
+                  setTables(next);
+                }}
+                onRemove={() => setTables(tables.filter((_, i) => i !== index))}
+              />
             ))}
 
             <div className="flex gap-3">
@@ -495,6 +468,27 @@ export function BookingsAdmin() {
                 />
                 <span>Бронирование на сайте включено</span>
               </label>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={content.booking.onlyTodayOnline ?? true}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      booking: {
+                        ...content.booking,
+                        onlyTodayOnline: e.target.checked,
+                      },
+                    })
+                  }
+                  className="accent-primary w-4 h-4"
+                />
+                <span>Онлайн-бронь только на текущую смену</span>
+              </label>
+              <p className="text-muted text-xs -mt-4">
+                Учитывает работу после полуночи: до 03:00 это ещё вчерашняя смена
+              </p>
 
               <label className="block space-y-2">
                 <span className="text-sm text-muted">Длительность брони (мин)</span>

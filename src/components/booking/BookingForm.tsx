@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { TableCard } from "@/components/booking/TableCard";
 import type {
   BookingAvailability,
   SiteContent,
@@ -9,36 +10,28 @@ import type {
 
 interface BookingFormProps {
   content: SiteContent;
+  businessDate: string;
+  businessDateLabel: string;
 }
 
-type Step = "date" | "time" | "table" | "details" | "done";
+type Step = "time" | "table" | "details" | "done";
 
-export function BookingForm({ content }: BookingFormProps) {
-  const [step, setStep] = useState<Step>("date");
+export function BookingForm({
+  content,
+  businessDate,
+  businessDateLabel,
+}: BookingFormProps) {
+  const [step, setStep] = useState<Step>("time");
   const [tables, setTables] = useState<Table[]>([]);
-  const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedTableId, setSelectedTableId] = useState("");
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [guests, setGuests] = useState(2);
   const [availability, setAvailability] = useState<BookingAvailability | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const dateOptions = useMemo(() => {
-    const options: string[] = [];
-    const today = new Date();
-    for (let i = 0; i <= content.booking.maxAdvanceDays; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + i);
-      options.push(
-        d.toLocaleDateString("sv-SE", { timeZone: content.timezone }),
-      );
-    }
-    return options;
-  }, [content.booking.maxAdvanceDays, content.timezone]);
 
   useEffect(() => {
     fetch("/api/tables")
@@ -46,23 +39,21 @@ export function BookingForm({ content }: BookingFormProps) {
       .then((data: Table[]) => setTables(data.filter((t) => t.enabled)));
   }, []);
 
-  const loadAvailability = useCallback(async (date: string) => {
+  const loadAvailability = useCallback(async () => {
     setLoading(true);
     setError("");
-    const res = await fetch(`/api/bookings/availability?date=${date}`);
+    const res = await fetch(`/api/bookings/availability?date=${businessDate}`);
     const data = (await res.json()) as BookingAvailability;
     setAvailability(data);
     setLoading(false);
     if (data.closed) {
-      setError(data.closedReason ?? "Нет свободных слотов");
+      setError(data.closedReason ?? "Нет свободных слотов на сегодня");
     }
-  }, []);
+  }, [businessDate]);
 
   useEffect(() => {
-    if (selectedDate) {
-      loadAvailability(selectedDate);
-    }
-  }, [selectedDate, loadAvailability]);
+    loadAvailability();
+  }, [loadAvailability]);
 
   const availableTables = useMemo(() => {
     if (!availability || !selectedTime) return [];
@@ -74,7 +65,7 @@ export function BookingForm({ content }: BookingFormProps) {
   const selectedTable = tables.find((t) => t.id === selectedTableId);
 
   async function handleSubmit() {
-    if (!selectedTableId || !selectedDate || !selectedTime) return;
+    if (!selectedTableId || !selectedTime) return;
 
     setSubmitting(true);
     setError("");
@@ -84,7 +75,7 @@ export function BookingForm({ content }: BookingFormProps) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         tableId: selectedTableId,
-        date: selectedDate,
+        date: businessDate,
         time: selectedTime,
         guestName,
         guestPhone,
@@ -103,84 +94,34 @@ export function BookingForm({ content }: BookingFormProps) {
     setStep("done");
   }
 
-  function formatDateLabel(dateStr: string): string {
-    const date = new Date(`${dateStr}T12:00:00`);
-    return date.toLocaleDateString("ru-RU", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      timeZone: content.timezone,
-    });
-  }
-
   const durationHours = content.booking.durationMinutes / 60;
+  const steps: Step[] = ["time", "table", "details"];
 
   return (
-    <div className="max-w-xl mx-auto">
+    <div className="max-w-2xl mx-auto">
       {step !== "done" && (
         <div className="flex gap-2 mb-8">
-          {(["date", "time", "table", "details"] as const).map((s, i) => (
+          {steps.map((s, i) => (
             <div
               key={s}
               className={`h-1 flex-1 rounded-full transition-colors ${
-                ["date", "time", "table", "details"].indexOf(step) >= i
-                  ? "bg-primary"
-                  : "bg-white/10"
+                steps.indexOf(step) >= i ? "bg-primary" : "bg-white/10"
               }`}
             />
           ))}
         </div>
       )}
 
-      {step === "date" && (
-        <div className="space-y-4 animate-fade-up">
-          <h2 className="font-display text-2xl font-semibold">Выберите дату</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {dateOptions.map((date) => (
-              <button
-                key={date}
-                onClick={() => {
-                  setSelectedDate(date);
-                  setSelectedTime("");
-                  setSelectedTableId("");
-                  setStep("time");
-                }}
-                className={`glass-card rounded-xl p-4 text-left transition-all hover:scale-[1.02] ${
-                  selectedDate === date ? "ring-2 ring-primary" : ""
-                }`}
-              >
-                <span className="text-sm text-muted block capitalize">
-                  {new Date(`${date}T12:00:00`).toLocaleDateString("ru-RU", {
-                    weekday: "short",
-                    timeZone: content.timezone,
-                  })}
-                </span>
-                <span className="font-medium">
-                  {new Date(`${date}T12:00:00`).toLocaleDateString("ru-RU", {
-                    day: "numeric",
-                    month: "short",
-                    timeZone: content.timezone,
-                  })}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {step === "time" && (
         <div className="space-y-4 animate-fade-up">
-          <button
-            onClick={() => setStep("date")}
-            className="text-muted text-sm hover:text-foreground"
-          >
-            ← Назад
-          </button>
-          <h2 className="font-display text-2xl font-semibold capitalize">
-            {formatDateLabel(selectedDate)}
-          </h2>
+          <div>
+            <p className="text-muted text-sm mb-1">Бронь на сегодня</p>
+            <h2 className="font-display text-2xl font-semibold capitalize">
+              {businessDateLabel}
+            </h2>
+          </div>
           <p className="text-muted text-sm">
-            Бронь на {durationHours} ч · слоты каждые {content.booking.intervalMinutes} мин
+            {durationHours} ч · слоты каждые {content.booking.intervalMinutes} мин
           </p>
 
           {loading && <p className="text-muted">Загрузка слотов…</p>}
@@ -219,23 +160,19 @@ export function BookingForm({ content }: BookingFormProps) {
             {selectedTime} · выберите столик
           </h2>
 
-          <div className="space-y-3">
+          <div className="grid sm:grid-cols-2 gap-4">
             {availableTables.map((table) => (
-              <button
+              <TableCard
                 key={table.id}
-                onClick={() => {
+                table={table}
+                compact
+                primaryColor={content.theme.primaryColor}
+                onSelect={() => {
                   setSelectedTableId(table.id);
                   setGuests(Math.min(guests, table.seats));
                   setStep("details");
                 }}
-                className="glass-card rounded-xl p-5 w-full text-left flex justify-between items-center hover:ring-2 hover:ring-primary transition-all"
-              >
-                <div>
-                  <p className="font-medium text-lg">{table.name}</p>
-                  <p className="text-muted text-sm">до {table.seats} гостей</p>
-                </div>
-                <span className="text-primary text-2xl">→</span>
-              </button>
+              />
             ))}
           </div>
 
@@ -255,18 +192,20 @@ export function BookingForm({ content }: BookingFormProps) {
           </button>
           <h2 className="font-display text-2xl font-semibold">Ваши данные</h2>
 
+          <TableCard
+            table={selectedTable}
+            zoomableImage
+            primaryColor={content.theme.primaryColor}
+          />
+
           <div className="glass-card rounded-xl p-5 text-sm space-y-1">
             <p>
               <span className="text-muted">Дата: </span>
-              {formatDateLabel(selectedDate)}
+              {businessDateLabel}
             </p>
             <p>
               <span className="text-muted">Время: </span>
               {selectedTime} ({durationHours} ч)
-            </p>
-            <p>
-              <span className="text-muted">Столик: </span>
-              {selectedTable.name}
             </p>
           </div>
 
@@ -327,7 +266,10 @@ export function BookingForm({ content }: BookingFormProps) {
           <p className="text-muted max-w-sm mx-auto">
             Мы получили вашу бронь и свяжемся для подтверждения. Также можете
             позвонить:{" "}
-            <a href={`tel:${content.phone.replace(/[^\d+]/g, "")}`} className="text-foreground underline">
+            <a
+              href={`tel:${content.phone.replace(/[^\d+]/g, "")}`}
+              className="text-foreground underline"
+            >
               {content.phone}
             </a>
           </p>

@@ -1,5 +1,6 @@
 import { BookingForm } from "@/components/booking/BookingForm";
 import { ThemeProvider } from "@/components/landing/ThemeProvider";
+import { getBookingBusinessDate } from "@/lib/booking";
 import { getContent } from "@/lib/content";
 import { buildPageMetadata } from "@/lib/seo";
 import Link from "next/link";
@@ -23,9 +24,20 @@ export default async function BookingPage() {
     redirect("/");
   }
 
+  const businessDate = getBookingBusinessDate(content);
+  const businessDateLabel = new Date(`${businessDate}T12:00:00`).toLocaleDateString(
+    "ru-RU",
+    {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      timeZone: content.timezone,
+    },
+  );
+
   return (
     <ThemeProvider content={content}>
-      <div className="min-h-screen smoke-bg">
+      <div className="site-bg min-h-screen">
         <header className="px-6 py-6 flex items-center justify-between max-w-xl mx-auto">
           <Link href="/" className="text-muted text-sm hover:text-foreground">
             ← {content.title}
@@ -40,7 +52,11 @@ export default async function BookingPage() {
             <p className="text-muted">{content.address}</p>
           </div>
 
-          <BookingForm content={content} />
+          <BookingForm
+            content={content}
+            businessDate={businessDate}
+            businessDateLabel={businessDateLabel}
+          />
         </main>
       </div>
     </ThemeProvider>
