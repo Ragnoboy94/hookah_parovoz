@@ -3,8 +3,8 @@ import path from "path";
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
 import { getTables, saveTables } from "@/lib/tables";
+import { TABLE_UPLOAD_DIR, tableImageUrl } from "@/lib/uploads";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "tables");
 const MAX_SIZE = 5 * 1024 * 1024;
 
 function resolveImageExt(file: File): "jpg" | "png" | "webp" | null {
@@ -60,19 +60,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Столик не найден" }, { status: 404 });
     }
 
-    await mkdir(UPLOAD_DIR, { recursive: true });
+    await mkdir(TABLE_UPLOAD_DIR, { recursive: true });
     const filename = `${tableId}.${ext}`;
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(path.join(UPLOAD_DIR, filename), buffer);
+    await writeFile(path.join(TABLE_UPLOAD_DIR, filename), buffer);
 
-    const imagePath = `/uploads/tables/${filename}`;
+    const imagePath = tableImageUrl(tableId, ext);
     const updated = tables.map((t) =>
       t.id === tableId ? { ...t, image: imagePath } : t,
     );
     await saveTables(updated);
 
     return NextResponse.json({ ok: true, image: imagePath });
-  } catch {
+  } catch (err) {
+    console.error("table upload failed:", err);
     return NextResponse.json({ error: "Ошибка загрузки" }, { status: 500 });
   }
 }
