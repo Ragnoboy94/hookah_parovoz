@@ -16,6 +16,8 @@ export function AdminPanel() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [tab, setTab] = useState<"main" | "schedule" | "menu" | "social" | "seo">("main");
+  const [pinging, setPinging] = useState(false);
+  const [pingResult, setPingResult] = useState("");
 
   const loadAuth = useCallback(async () => {
     const res = await fetch("/api/auth/me");
@@ -176,8 +178,24 @@ export function AdminPanel() {
     metaDescription: content?.subtitle ?? "",
     keywords: "",
     ogImage: "",
+    city: "Калининград",
+    region: "RU-KGD",
+    googleVerification: "",
+    yandexVerification: "",
+    indexNowKey: "",
   };
   const seo = { ...defaultSeo, ...content?.seo };
+
+  async function pingSearchEngines() {
+    setPinging(true);
+    setPingResult("");
+    const res = await fetch("/api/seo/ping", { method: "POST" });
+    const data = (await res.json()) as { ok?: boolean; error?: string };
+    setPinging(false);
+    setPingResult(
+      res.ok ? "Запрос на индексацию отправлен" : (data.error ?? "Ошибка"),
+    );
+  }
 
   return (
     <div className="min-h-screen admin-bg">
@@ -358,7 +376,56 @@ export function AdminPanel() {
                 Пусто — автокартинка /opengraph-image
               </p>
             </Field>
-            <div className="glass-card rounded-xl p-4 text-sm text-muted space-y-1">
+            <Field label="Город (для SEO)">
+              <input
+                className="input-field"
+                value={seo.city ?? ""}
+                onChange={(e) =>
+                  update("seo", { ...seo, city: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Google Search Console (код верификации)">
+              <input
+                className="input-field"
+                value={seo.googleVerification ?? ""}
+                onChange={(e) =>
+                  update("seo", {
+                    ...seo,
+                    googleVerification: e.target.value,
+                  })
+                }
+                placeholder="код из meta-тега"
+              />
+            </Field>
+            <Field label="Яндекс.Вебмастер (код верификации)">
+              <input
+                className="input-field"
+                value={seo.yandexVerification ?? ""}
+                onChange={(e) =>
+                  update("seo", {
+                    ...seo,
+                    yandexVerification: e.target.value,
+                  })
+                }
+                placeholder="код из meta-тега"
+              />
+            </Field>
+            <Field label="IndexNow ключ">
+              <input
+                className="input-field"
+                value={seo.indexNowKey ?? ""}
+                onChange={(e) =>
+                  update("seo", { ...seo, indexNowKey: e.target.value })
+                }
+                placeholder="parovoz39idx2026"
+              />
+              <p className="text-muted text-xs mt-1">
+                Файл проверки:{" "}
+                {seo.siteUrl.replace(/\/$/, "")}/{seo.indexNowKey || "ключ"}.txt
+              </p>
+            </Field>
+            <div className="glass-card rounded-xl p-4 text-sm text-muted space-y-3">
               <p>
                 <strong className="text-foreground">robots.txt:</strong> /robots.txt
               </p>
@@ -366,6 +433,48 @@ export function AdminPanel() {
                 <strong className="text-foreground">sitemap:</strong>{" "}
                 {seo.siteUrl.replace(/\/$/, "")}/sitemap.xml
               </p>
+              <div className="pt-2 border-t border-white/10 space-y-2">
+                <p className="text-foreground font-medium">
+                  Чтобы сайт появился в Google и Яндексе:
+                </p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>
+                    Добавьте сайт в{" "}
+                    <a
+                      href="https://search.google.com/search-console"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      Google Search Console
+                    </a>
+                  </li>
+                  <li>
+                    Добавьте сайт в{" "}
+                    <a
+                      href="https://webmaster.yandex.ru"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      Яндекс.Вебмастер
+                    </a>
+                  </li>
+                  <li>Вставьте коды верификации выше и сохраните</li>
+                  <li>Отправьте sitemap в обеих панелях</li>
+                </ol>
+              </div>
+              <button
+                type="button"
+                onClick={pingSearchEngines}
+                disabled={pinging}
+                className="btn-primary text-sm py-2 px-4"
+              >
+                {pinging ? "Отправка…" : "Запросить переиндексацию"}
+              </button>
+              {pingResult && (
+                <p className="text-green-400 text-xs">{pingResult}</p>
+              )}
             </div>
           </div>
         )}

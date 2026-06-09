@@ -65,6 +65,11 @@ export interface SiteContent {
     metaDescription: string;
     keywords: string;
     ogImage: string;
+    city?: string;
+    region?: string;
+    googleVerification?: string;
+    yandexVerification?: string;
+    indexNowKey?: string;
   };
   telegram?: {
     enabled: boolean;

@@ -1,8 +1,9 @@
 import { BookingForm } from "@/components/booking/BookingForm";
+import { JsonLd } from "@/components/landing/JsonLd";
 import { ThemeProvider } from "@/components/landing/ThemeProvider";
 import { getBookingBusinessDate } from "@/lib/booking";
 import { getContent } from "@/lib/content";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildPageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -35,8 +36,14 @@ export default async function BookingPage() {
     },
   );
 
+  const breadcrumbs = buildBreadcrumbJsonLd(content, [
+    { name: content.title, path: "/" },
+    { name: "Бронирование столика", path: "/booking" },
+  ]);
+
   return (
     <ThemeProvider content={content}>
+      <JsonLd data={breadcrumbs} />
       <div className="site-bg min-h-screen">
         <header className="px-6 py-6 flex items-center justify-between max-w-xl mx-auto">
           <Link href="/" className="text-muted text-sm hover:text-foreground">

@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+test-upload.png
 
 # debug
 npm-debug.log*
@@ -40,3 +41,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# runtime data (generated on server / in admin)
+data/bookings.json
+
+# user uploads (generated via admin)
+public/uploads/tables/*
+!public/uploads/tables/.gitkeep

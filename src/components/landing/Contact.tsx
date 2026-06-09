@@ -20,7 +20,7 @@ export function Contact({ content }: ContactProps) {
           <h2 className="font-display text-2xl font-semibold mb-6">Контакты</h2>
 
           <div className="space-y-5">
-            <div>
+            <address className="not-italic">
               <p className="text-muted text-sm mb-1">Адрес</p>
               <a
                 href={mapUrl}
@@ -29,9 +29,9 @@ export function Contact({ content }: ContactProps) {
                 className="text-lg hover:underline underline-offset-4"
                 style={{ color: content.theme.primaryColor }}
               >
-                {content.address}
+                {content.address}, Калининград
               </a>
-            </div>
+            </address>
 
             <div>
               <p className="text-muted text-sm mb-1">Телефон</p>

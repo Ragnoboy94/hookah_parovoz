@@ -8,7 +8,13 @@ import { ThemeProvider } from "@/components/landing/ThemeProvider";
 import { YandexMetrika } from "@/components/landing/YandexMetrika";
 import { getContent } from "@/lib/content";
 import { getOpenStatus } from "@/lib/schedule";
-import { buildLocalBusinessJsonLd, buildPageMetadata } from "@/lib/seo";
+import { SeoIntro } from "@/components/landing/SeoIntro";
+import {
+  buildFaqJsonLd,
+  buildLocalBusinessJsonLd,
+  buildPageMetadata,
+  buildWebSiteJsonLd,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -20,14 +26,15 @@ export async function generateMetadata() {
 export default async function HomePage() {
   const content = await getContent();
   const status = getOpenStatus(content);
-  const jsonLd = buildLocalBusinessJsonLd(content);
-
   return (
     <ThemeProvider content={content}>
-      <JsonLd data={jsonLd} />
+      <JsonLd data={buildLocalBusinessJsonLd(content)} />
+      <JsonLd data={buildWebSiteJsonLd(content)} />
+      <JsonLd data={buildFaqJsonLd(content)} />
       <main className="site-bg min-h-screen">
         <Hero content={content} status={status} />
         <AgeNotice text={content.legal.ageRestriction} />
+        <SeoIntro content={content} />
         <Menu content={content} />
         <Contact content={content} />
         <Footer content={content} />

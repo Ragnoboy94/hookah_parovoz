@@ -20,12 +20,27 @@ export function getSiteUrl(content: SiteContent): string {
   return url.replace(/\/$/, "");
 }
 
+export function getSiteHost(content: SiteContent): string {
+  try {
+    return new URL(getSiteUrl(content)).hostname;
+  } catch {
+    return "parovoz39.ru";
+  }
+}
+
 export function getSeo(content: SiteContent) {
+  const city = content.seo?.city?.trim() || "Калининград";
   const defaults = {
-    metaTitle: `${content.title} — кальянная`,
-    metaDescription: `${content.subtitle}. ${content.address}. ${content.phone}`,
-    keywords: `кальянная, кальян, ${content.title}, калининград`,
+    siteUrl: "https://parovoz39.ru",
+    metaTitle: `${content.title} — кальянная в ${city}`,
+    metaDescription: `Кальянная ${content.title} в ${city}: ${content.address}. ${content.subtitle}. Меню кальянов и напитков, уютная атмосфера, онлайн-бронирование столиков.`,
+    keywords: `кальянная ${city.toLowerCase()}, кальян ${city.toLowerCase()}, ${content.title.toLowerCase()}, кальянная артиллерийская, бронь столика, lounge bar`,
     ogImage: "",
+    city,
+    region: "RU-KGD",
+    googleVerification: "",
+    yandexVerification: "",
+    indexNowKey: "",
   };
 
   return { ...defaults, ...content.seo };
@@ -51,12 +66,28 @@ export function buildPageMetadata(
       : `${siteUrl}${seo.ogImage}`
     : `${siteUrl}/opengraph-image`;
 
+  const verification: Metadata["verification"] = {};
+  if (seo.googleVerification?.trim()) {
+    verification.google = seo.googleVerification.trim();
+  }
+  if (seo.yandexVerification?.trim()) {
+    verification.yandex = seo.yandexVerification.trim();
+  }
+
   return {
     metadataBase: new URL(siteUrl),
     title,
     description,
     keywords: seo.keywords.split(",").map((k) => k.trim()).filter(Boolean),
     alternates: { canonical },
+    authors: [{ name: content.title }],
+    category: "Кальянная",
+    verification: Object.keys(verification).length ? verification : undefined,
+    other: {
+      "geo.region": seo.region,
+      "geo.placename": seo.city,
+      "content-language": "ru",
+    },
     openGraph: {
       type: "website",
       locale: "ru_RU",
@@ -74,7 +105,11 @@ export function buildPageMetadata(
     },
     robots: options?.noIndex
       ? { index: false, follow: false }
-      : { index: true, follow: true },
+      : {
+          index: true,
+          follow: true,
+          googleBot: { index: true, follow: true, "max-image-preview": "large" },
+        },
   };
 }
 
@@ -107,15 +142,23 @@ export function buildLocalBusinessJsonLd(content: SiteContent) {
     description: seo.metaDescription,
     url: siteUrl,
     telephone: phone,
+    image: `${siteUrl}/opengraph-image`,
     address: {
       "@type": "PostalAddress",
       streetAddress: content.address,
-      addressLocality: "Калининград",
+      addressLocality: seo.city,
+      addressRegion: "Калининградская область",
       addressCountry: "RU",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 54.7104,
+      longitude: 20.5101,
     },
     openingHoursSpecification,
     servesCuisine: "Кальянная",
     priceRange: "₽₽",
+    sameAs: Object.values(content.social).filter((url) => url.trim()),
     ...(content.booking.enabled && {
       potentialAction: {
         "@type": "ReserveAction",
@@ -123,5 +166,73 @@ export function buildLocalBusinessJsonLd(content: SiteContent) {
         name: "Забронировать столик",
       },
     }),
+  };
+}
+
+export function buildWebSiteJsonLd(content: SiteContent) {
+  const siteUrl = getSiteUrl(content);
+  const seo = getSeo(content);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
+    url: siteUrl,
+    name: content.title,
+    description: seo.metaDescription,
+    inLanguage: "ru-RU",
+    publisher: { "@id": `${siteUrl}/#business` },
+  };
+}
+
+export function buildFaqJsonLd(content: SiteContent) {
+  const siteUrl = getSiteUrl(content);
+  const seo = getSeo(content);
+
+  const items = [
+    {
+      question: `Где находится кальянная ${content.title}?`,
+      answer: `${content.title} — кальянная в ${seo.city} по адресу ${content.address}.`,
+    },
+    {
+      question: "Можно ли забронировать столик онлайн?",
+      answer: content.booking.enabled
+        ? `Да, на сайте ${siteUrl}/booking доступно онлайн-бронирование столиков.`
+        : "Уточняйте бронь по телефону.",
+    },
+    {
+      question: `Как связаться с ${content.title}?`,
+      answer: `Телефон: ${content.phone}.`,
+    },
+  ];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+}
+
+export function buildBreadcrumbJsonLd(
+  content: SiteContent,
+  items: { name: string; path: string }[],
+) {
+  const siteUrl = getSiteUrl(content);
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: `${siteUrl}${item.path}`,
+    })),
   };
 }

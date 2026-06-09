@@ -56,8 +56,17 @@ export function Footer({ content }: FooterProps) {
           </div>
         )}
 
-        <p className="text-center text-muted text-xs">
-          © {new Date().getFullYear()} {content.title}
+        <p className="text-center text-muted text-xs max-w-lg mx-auto leading-relaxed">
+          © {new Date().getFullYear()} {content.title} — кальянная в Калининграде.
+          {content.booking.enabled && (
+            <>
+              {" "}
+              <a href="/booking" className="underline underline-offset-2 hover:text-foreground">
+                Бронь столика онлайн
+              </a>
+              .
+            </>
+          )}
         </p>
       </div>
     </footer>
