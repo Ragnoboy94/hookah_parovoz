@@ -1,13 +1,12 @@
 import type { MetadataRoute } from "next";
 import { getContent } from "@/lib/content";
-import { getSeo, getSiteUrl } from "@/lib/seo";
+import { getSeo } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const content = await getContent();
   const seo = getSeo(content);
-  const siteUrl = getSiteUrl(content);
 
   return {
     name: seo.metaTitle,
@@ -20,9 +19,21 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     lang: "ru",
     icons: [
       {
-        src: `${siteUrl}/icon`,
+        src: "/icon",
         sizes: "32x32",
         type: "image/png",
+      },
+      {
+        src: "/apple-icon",
+        sizes: "180x180",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/apple-icon",
+        sizes: "180x180",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
   };

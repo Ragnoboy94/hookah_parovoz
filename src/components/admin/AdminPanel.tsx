@@ -180,6 +180,9 @@ export function AdminPanel() {
     ogImage: "",
     city: "Калининград",
     region: "RU-KGD",
+    regionName: "Калининградская область",
+    latitude: "54.7104",
+    longitude: "20.5101",
     googleVerification: "",
     yandexVerification: "",
     indexNowKey: "",
@@ -376,15 +379,42 @@ export function AdminPanel() {
                 Пусто — автокартинка /opengraph-image
               </p>
             </Field>
-            <Field label="Город (для SEO)">
+            <Field label="Город (для SEO и региона)">
               <input
                 className="input-field"
                 value={seo.city ?? ""}
                 onChange={(e) =>
                   update("seo", { ...seo, city: e.target.value })
                 }
+                placeholder="Калининград"
               />
             </Field>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="Код региона (geo.region)">
+                <input
+                  className="input-field"
+                  value={seo.region ?? ""}
+                  onChange={(e) =>
+                    update("seo", { ...seo, region: e.target.value })
+                  }
+                  placeholder="RU-KGD"
+                />
+              </Field>
+              <Field label="Область / регион">
+                <input
+                  className="input-field"
+                  value={seo.regionName ?? ""}
+                  onChange={(e) =>
+                    update("seo", { ...seo, regionName: e.target.value })
+                  }
+                  placeholder="Калининградская область"
+                />
+              </Field>
+            </div>
+            <p className="text-muted text-xs -mt-2">
+              Для Яндекс.Вебмастера и Google: регион Калининград — RU-KGD. Координаты
+              подставляются в разметку автоматически.
+            </p>
             <Field label="Google Search Console (код верификации)">
               <input
                 className="input-field"

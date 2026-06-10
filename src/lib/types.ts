@@ -67,6 +67,9 @@ export interface SiteContent {
     ogImage: string;
     city?: string;
     region?: string;
+    regionName?: string;
+    latitude?: string;
+    longitude?: string;
     googleVerification?: string;
     yandexVerification?: string;
     indexNowKey?: string;

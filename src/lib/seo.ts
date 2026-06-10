@@ -30,6 +30,10 @@ export function getSiteHost(content: SiteContent): string {
 
 export function getSeo(content: SiteContent) {
   const city = content.seo?.city?.trim() || "Калининград";
+  const regionName = content.seo?.regionName?.trim() || "Калининградская область";
+  const latitude = content.seo?.latitude?.trim() || "54.7104";
+  const longitude = content.seo?.longitude?.trim() || "20.5101";
+
   const defaults = {
     siteUrl: "https://parovoz39.ru",
     metaTitle: `${content.title} — кальянная в ${city}`,
@@ -38,12 +42,20 @@ export function getSeo(content: SiteContent) {
     ogImage: "",
     city,
     region: "RU-KGD",
+    regionName,
+    latitude,
+    longitude,
     googleVerification: "",
     yandexVerification: "",
-    indexNowKey: "",
+    indexNowKey: "parovoz39idx2026",
   };
 
-  return { ...defaults, ...content.seo };
+  const merged = { ...defaults, ...content.seo };
+  if (!merged.city?.trim()) merged.city = city;
+  if (!merged.region?.trim()) merged.region = "RU-KGD";
+  if (!merged.regionName?.trim()) merged.regionName = regionName;
+
+  return merged;
 }
 
 export function buildPageMetadata(
@@ -83,9 +95,19 @@ export function buildPageMetadata(
     authors: [{ name: content.title }],
     category: "Кальянная",
     verification: Object.keys(verification).length ? verification : undefined,
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "any" },
+        { url: "/icon", type: "image/png", sizes: "32x32" },
+      ],
+      apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
+      shortcut: "/favicon.ico",
+    },
     other: {
       "geo.region": seo.region,
       "geo.placename": seo.city,
+      "geo.position": `${seo.latitude};${seo.longitude}`,
+      ICBM: `${seo.latitude}, ${seo.longitude}`,
       "content-language": "ru",
     },
     openGraph: {
@@ -147,13 +169,21 @@ export function buildLocalBusinessJsonLd(content: SiteContent) {
       "@type": "PostalAddress",
       streetAddress: content.address,
       addressLocality: seo.city,
-      addressRegion: "Калининградская область",
+      addressRegion: seo.regionName,
       addressCountry: "RU",
+    },
+    areaServed: {
+      "@type": "City",
+      name: seo.city,
+      containedInPlace: {
+        "@type": "AdministrativeArea",
+        name: seo.regionName,
+      },
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: 54.7104,
-      longitude: 20.5101,
+      latitude: Number(seo.latitude),
+      longitude: Number(seo.longitude),
     },
     openingHoursSpecification,
     servesCuisine: "Кальянная",
